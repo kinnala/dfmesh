@@ -1,15 +1,15 @@
 import numpy as np
 from helpers import assert_norm_equality, save
 
-import dmsh
+import dfmesh
 
 
 def test(show=False):
-    r = dmsh.Rectangle(-1.0, +1.0, -1.0, +1.0)
-    c = dmsh.Circle([0.0, 0.0], 0.3)
-    geo = dmsh.Difference(r, c)
+    r = dfmesh.Rectangle(-1.0, +1.0, -1.0, +1.0)
+    c = dfmesh.Circle([0.0, 0.0], 0.3)
+    geo = dfmesh.Difference(r, c)
 
-    X, cells = dmsh.generate(
+    X, cells = dfmesh.generate(
         geo,
         lambda pts: np.abs(c.dist(pts)) / 5 + 0.05,
         show=show,

@@ -15,11 +15,12 @@ from .geometry import (
     Translation,
     Union,
 )
-from .main import generate
+from .main import generate, triangulate
 
 __all__ = [
     "__version__",
     "generate",
+    "triangulate",
     "Circle",
     "Difference",
     "Ellipse",

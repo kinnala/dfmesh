@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..helpers import find_feature_points
+from .._helpers import find_feature_points
 
 
 class Geometry:

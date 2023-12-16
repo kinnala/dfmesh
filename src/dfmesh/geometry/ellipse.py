@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..helpers import multi_newton
+from .._helpers import multi_newton
 from .geometry import Geometry
 
 

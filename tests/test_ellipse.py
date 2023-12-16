@@ -1,13 +1,13 @@
 import pytest
 from helpers import assert_norm_equality, save
 
-import dmsh
+import dfmesh
 
 
 @pytest.mark.skip
 def test_ellipse(show=False):
-    geo = dmsh.Ellipse([0.0, 0.0], 2.0, 1.0)
-    X, cells = dmsh.generate(geo, 0.2, show=show)
+    geo = dfmesh.Ellipse([0.0, 0.0], 2.0, 1.0)
+    X, cells = dfmesh.generate(geo, 0.2, show=show)
 
     geo.plot()
 

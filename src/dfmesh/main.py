@@ -3,13 +3,12 @@ from __future__ import annotations
 import math
 from typing import Callable
 
-import meshplex
-import npx
+from ._mesh_tri import MeshTri
 import numpy as np
 import scipy.spatial
 
 from .geometry import Geometry
-from .helpers import show as show_mesh
+from ._helpers import show as show_mesh
 
 
 def _create_cells(pts, geo: Geometry):
@@ -21,21 +20,6 @@ def _create_cells(pts, geo: Geometry):
     bc = np.sum(pts[cells], axis=1) / 3.0
     cells = cells[geo.dist(bc.T) < 0.0]
 
-    # # kick out all cells whose barycenter or edge midpoints are not in the geometry
-    # btol = 1.0e-3
-    # bc = np.sum(pts[cells], axis=1) / 3.0
-    # barycenter_inside = geo.dist(bc.T) < btol
-    # # Remove cells which are (partly) outside of the domain. Check at the midpoint of
-    # # all edges.
-    # mid0 = (pts[cells[:, 1]] + pts[cells[:, 2]]) / 2
-    # mid1 = (pts[cells[:, 2]] + pts[cells[:, 0]]) / 2
-    # mid2 = (pts[cells[:, 0]] + pts[cells[:, 1]]) / 2
-    # edge_midpoints_inside = (
-    #     (geo.dist(mid0.T) < btol)
-    #     & (geo.dist(mid1.T) < btol)
-    #     & (geo.dist(mid2.T) < btol)
-    # )
-    # cells = cells[barycenter_inside & edge_midpoints_inside]
     return cells
 
 
@@ -66,6 +50,8 @@ def _recell_and_boundary_step(mesh, geo, flip_tol):
     mesh.remove_boundary_cells(
         lambda is_bdry_cell: geo.dist(mesh.compute_cell_centroids(is_bdry_cell).T) > 0.0
     )
+
+    return np.min(mesh.q_radius_ratio)
 
 
 def create_staggered_grid(h, bounding_box):
@@ -110,29 +96,13 @@ def create_staggered_grid(h, bounding_box):
     return out
 
 
-# def get_max_step(mesh):
-#     # Some methods are stable (CPT), others can break down if the mesh isn't very
-#     # smooth. A break-down manifests, for example, in a step size that lets triangles
-#     # become fully flat or even "overshoot". After that, anything can happen. To prevent
-#     # this, restrict the maximum step size to half of the minimum the incircle radius of
-#     # all adjacent cells. This makes sure that triangles cannot "flip".
-#     # <https://stackoverflow.com/a/57261082/353337>
-#     max_step = np.full(mesh.points.shape[0], np.inf)
-#     np.minimum.at(
-#         max_step, mesh.cells("points").reshape(-1), np.repeat(mesh.cell_inradius, 3),
-#     )
-#     max_step *= 0.5
-#     return max_step
-
-
 def generate(
     geo: Geometry,
     target_edge_size: float | Callable,
-    # smoothing_method="distmesh",
     tol: float = 1.0e-5,
     random_seed: int = 0,
     show: bool = False,
-    max_steps: int = 10000,
+    max_steps: int = 1000,
     verbose: bool = False,
     flip_tol: float = 0.0,
 ):
@@ -179,7 +149,7 @@ def generate(
         pts = np.concatenate([geo.feature_points, pts])
 
     cells = _create_cells(pts, geo)
-    mesh = meshplex.MeshTri(pts, cells)
+    mesh = MeshTri(pts, cells)
     # When creating a mesh for the staggered grid, degenerate cells can very well occur
     # at the boundary, where points sit in a straight line. Remove those cells.
     mesh.remove_cells(mesh.q_radius_ratio < 1.0e-10)
@@ -190,20 +160,6 @@ def generate(
     #     mesh.points[is_boundary_point].T
     # ).T
 
-    # print(sum(is_boundary_point))
-    # show_mesh(pts, cells, geo)
-    # exit(1)
-
-    # if smoothing_method == "odt":
-    #     points, cells = optimesh.odt.fixed_point_uniform(
-    #         mesh.points,
-    #         mesh.cells("points"),
-    #         max_num_steps=max_steps,
-    #         verbose=verbose,
-    #         boundary_step=geo.boundary_step,
-    #     )
-    # else:
-    #     assert smoothing_method == "distmesh"
     dim = 2
     mesh = distmesh_smoothing(
         mesh,
@@ -224,6 +180,34 @@ def generate(
     return points, cells
 
 
+def triangulate(*args, **kwargs):
+    """Triangulate a geometry.
+
+    Parameters
+    ----------
+    geo: Geometry
+        The geometry to triangulate.
+    target_edge_size: float | Callable
+        The size of triangle edges.
+    tol: float = 1.0e-5
+        Smoothing terminates if nodes move < tol ** 2.
+    random_seed: int = 0
+    show: bool = False
+    max_steps: int = 1000
+        Smoothing terminates if exceeded.
+    verbose: bool = False
+    flip_tol: float = 0.0
+
+    Returns
+    -------
+    points
+    elements
+
+    """
+    points, cells = generate(*args, **kwargs)
+    return points.T, cells.T
+
+
 def distmesh_smoothing(
     mesh,
     geo,
@@ -241,15 +225,13 @@ def distmesh_smoothing(
 
     k = 0
     move2 = [0.0]
+    prev_max_move = 0.
     while True:
-        # print()
-        # print(f"step {k}")
         if verbose:
             print(f"step {k}")
 
         if k > max_steps:
-            if verbose:
-                print(f"Exceeded max_steps ({max_steps}).")
+            print(f"dfmesh: Exceeded max_steps ({max_steps}).")
             break
 
         k += 1
@@ -277,40 +259,18 @@ def distmesh_smoothing(
         # only consider repulsive forces
         force_abs[force_abs < 0.0] = 0.0
 
-        # In <https://github.com/nschloe/dmsh/issues/85>, there's a suggestion for a
-        # better forcing function. The below doesn't seem to work too well though.
-        #
-        # Need to set delta_t to 1.0e-2 or smaller to accommodate for the missing factor
-        # `target_lengths`.
-        # force_type = "persson"
-        # relative_length = edge_lengths / target_lengths
-        # if force_type.lower() == "persson":
-        #     force_abs = 1.0 - relative_length
-        #     # only consider repulsive forces
-        #     force_abs[relative_length > 1.0] = 0.0
-        # else:
-        #     assert force_type.lower() == "bossens"
-        #     force_abs = (1 - relative_length ** 4) * np.exp(-(relative_length ** 4))
-
         # force vectors
         force = edges_vec_normalized * force_abs[..., None]
 
         n = mesh.points.shape[0]
-        force_per_point = npx.sum_at(-force, edges[:, 0], minlength=n) + npx.sum_at(
-            +force, edges[:, 1], minlength=n
-        )
+        force_per_point = np.zeros((2, n))
+        np.add.at(force_per_point[0], edges[:, 0], -force[:, 0])
+        np.add.at(force_per_point[1], edges[:, 0], -force[:, 1])
+        np.add.at(force_per_point[0], edges[:, 1], force[:, 0])
+        np.add.at(force_per_point[1], edges[:, 1], force[:, 1])
+        force_per_point = force_per_point.T
 
         update = delta_t * force_per_point
-
-        # # Limit the max step size to avoid overshoots
-        # TODO this doesn't work for distmesh smoothing. hm.
-        # mesh = meshplex.MeshTri(pts, cells)
-        # max_step = get_max_step(mesh)
-        # step_lengths = np.sqrt(np.einsum("ij,ij->i", update, update))
-        # idx = step_lengths > max_step
-        # update[idx] *= (max_step / step_lengths)[idx, None]
-        # # alpha = np.min(max_step / step_lengths)
-        # # update *= alpha
 
         points_old = mesh.points.copy()
 
@@ -327,13 +287,18 @@ def distmesh_smoothing(
         # Alternative: Push all boundary points (the ones _inside_ the geometry as well)
         # back to the boundary.
         # idx = is_outside | is_boundary_point
-        _recell_and_boundary_step(mesh, geo, flip_tol)
+        minq = _recell_and_boundary_step(mesh, geo, flip_tol)
 
         diff = points_new - points_old
         move2 = np.einsum("ij,ij->i", diff, diff)
+        max_move = np.sqrt(np.max(move2))
+        if np.abs(prev_max_move - max_move) < 1e-8 and minq > 0.5:
+            delta_t /= 2
+            prev_max_move = 0
+        prev_max_move = max_move
         if verbose:
-            print(f"max_move: {np.sqrt(np.max(move2)):.6e}")
-        if np.all(move2 < tol**2):
+            print(f"max_move: {max_move:.6e}, dt: " + str(delta_t))
+        if max_move < tol**2:
             break
 
     # The cell removal steps in _recell_and_boundary_step() might create points which

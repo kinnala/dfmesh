@@ -2,13 +2,10 @@
 requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.isort]
-profile = "black"
-
 [project]
-name = "dmsh"
-authors = [{name = "Nico Schlömer", email = "nico.schloemer@gmail.com"}]
-description = "High-quality 2D mesh generator based on distmesh"
+name = "dfmesh"
+authors = [{name = "Tom Gustafsson"}]
+description = "Mesh generation using distance fields"
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
@@ -18,18 +15,17 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dynamic = ["version"]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
-  "meshplex >= 0.16.0, < 0.18.0",
-  "npx",
   "numpy",
   "scipy",
 ]
@@ -38,6 +34,5 @@ dependencies = [
 all = ["matplotlib"]
 
 [project.urls]
-Code = "https://github.com/nschloe/dmsh"
-Issues = "https://github.com/nschloe/dmsh/issues"
-Funding = "https://github.com/sponsors/nschloe"
+Code = "https://github.com/kinnala/dfmesh"
+Issues = "https://github.com/kinnala/dfmesh/issues"

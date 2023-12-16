@@ -29,9 +29,9 @@ max_err: {:.3e}""".format(
 
 
 def save(filename, X, cells):
-    import meshplex
+    import dfmesh
 
-    mesh = meshplex.MeshTri(X, cells)
+    mesh = dfmesh.MeshTri(X, cells)
     mesh.save(
         filename,
         show_coedges=False,

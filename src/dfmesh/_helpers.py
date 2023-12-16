@@ -1,8 +1,41 @@
 from __future__ import annotations
 
 from typing import Callable
-
 import numpy as np
+
+
+def grp_start_len(a):
+    """Given a sorted 1D input array `a`, e.g., [0 0, 1, 2, 3, 4, 4, 4], this routine
+    returns the indices where the blocks of equal integers start and how long the blocks
+    are.
+    """
+    # https://stackoverflow.com/a/50394587/353337
+    m = np.concatenate([[True], a[:-1] != a[1:], [True]])
+    idx = np.flatnonzero(m)
+    return idx[:-1], np.diff(idx)
+
+
+def _dot(a, n):
+    """Dot product, preserve the leading n dimensions."""
+    # einsum is faster if the tail survives, e.g., ijk,ijk->jk.
+    # <https://gist.github.com/nschloe/8bc015cc1a9e5c56374945ddd711df7b>
+    # TODO reorganize the data?
+    assert n <= len(a.shape)
+    # Would use -1 as second argument, but <https://github.com/numpy/numpy/issues/18519>
+    b = a.reshape(*a.shape[:n], np.prod(a.shape[n:]).astype(int))
+    return np.einsum("...i,...i->...", b, b)
+
+
+def _multiply(a, b, n):
+    """Multiply the along the first n dimensions of a and b. For example,
+    a.shape == (5,6,3), b.shape == (5, 6), n = 2, will return an array c of a.shape with
+    c[i,j,k] = a[i,j,k] * b[i,j].
+    """
+    aa = a.reshape(np.prod(a.shape[:n]), *a.shape[n:])
+    bb = b.reshape(np.prod(b.shape[:n]), *b.shape[n:])
+    cc = (aa.T * bb).T
+    c = cc.reshape(*a.shape)
+    return c
 
 
 def multi_newton(
@@ -190,3 +223,11 @@ def unique_float_cols(data: np.ndarray, k: int = 0, tol: float = 1.0e-10):
 
     out = np.column_stack([unique_float_cols(chunk, k + 1, tol) for chunk in chunks])
     return out
+
+
+def unique_rows(data, **kwargs):
+    b = np.ascontiguousarray(data).view(
+        np.dtype((np.void, data.dtype.itemsize * data.shape[1]))
+    )
+    output = np.unique(b, **kwargs)
+    return (output[0].view(data.dtype).reshape(-1, data.shape[1]),) + output[1:]

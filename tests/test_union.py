@@ -1,12 +1,12 @@
 import numpy as np
 from helpers import assert_equality, assert_norm_equality
 
-import dmsh
+import dfmesh
 
 
 def test_union_circles(show=False):
-    geo = dmsh.Circle([-0.5, 0.0], 1.0) + dmsh.Circle([+0.5, 0.0], 1.0)
-    X, cells = dmsh.generate(geo, 0.15, show=show, tol=1.0e-5, max_steps=100)
+    geo = dfmesh.Circle([-0.5, 0.0], 1.0) + dfmesh.Circle([+0.5, 0.0], 1.0)
+    X, cells = dfmesh.generate(geo, 0.15, show=show, tol=1.0e-5, max_steps=100)
 
     geo.plot()
 
@@ -16,10 +16,10 @@ def test_union_circles(show=False):
 
 
 def test_union_rectangles(show=False):
-    geo = dmsh.Rectangle(-1.0, +0.5, -1.0, +0.5) | dmsh.Rectangle(
+    geo = dfmesh.Rectangle(-1.0, +0.5, -1.0, +0.5) | dfmesh.Rectangle(
         -0.5, +1.0, -0.5, +1.0
     )
-    X, cells = dmsh.generate(geo, 0.15, show=show, tol=1.0e-5, max_steps=100)
+    X, cells = dfmesh.generate(geo, 0.15, show=show, tol=1.0e-5, max_steps=100)
 
     ref_norms = [1.8417796811774514e02, 1.1277323166424049e01, 1.0000000000000000e00]
     assert_norm_equality(X.flatten(), ref_norms, 1.0e-10)
@@ -28,14 +28,14 @@ def test_union_rectangles(show=False):
 
 def test_union_three_circles(show=False):
     angles = np.pi * np.array([3.0 / 6.0, 7.0 / 6.0, 11.0 / 6.0])
-    geo = dmsh.Union(
+    geo = dfmesh.Union(
         [
-            dmsh.Circle([np.cos(angles[0]), np.sin(angles[0])], 1.0),
-            dmsh.Circle([np.cos(angles[1]), np.sin(angles[1])], 1.0),
-            dmsh.Circle([np.cos(angles[2]), np.sin(angles[2])], 1.0),
+            dfmesh.Circle([np.cos(angles[0]), np.sin(angles[0])], 1.0),
+            dfmesh.Circle([np.cos(angles[1]), np.sin(angles[1])], 1.0),
+            dfmesh.Circle([np.cos(angles[2]), np.sin(angles[2])], 1.0),
         ]
     )
-    X, cells = dmsh.generate(geo, 0.2, show=show, tol=1.0e-5, max_steps=100)
+    X, cells = dfmesh.generate(geo, 0.2, show=show, tol=1.0e-5, max_steps=100)
 
     ref_norms = [4.0359760255235619e02, 2.1162741423521961e01, 2.0000000000000000e00]
     assert_norm_equality(X.flatten(), ref_norms, 1.0e-10)
@@ -43,7 +43,7 @@ def test_union_three_circles(show=False):
 
 
 def test_boundary_step():
-    geo = dmsh.Union([dmsh.Circle([-0.5, 0.0], 1.0), dmsh.Circle([+0.5, 0.0], 1.0)])
+    geo = dfmesh.Union([dfmesh.Circle([-0.5, 0.0], 1.0), dfmesh.Circle([+0.5, 0.0], 1.0)])
     a = geo.boundary_step([-0.5, 0.9])
     assert np.array_equal(a, [-0.5, 1.0])
 
@@ -65,7 +65,7 @@ def test_boundary_step():
 
 
 def test_boundary_step2():
-    geo = dmsh.Union([dmsh.Circle([-0.5, 0.0], 1.0), dmsh.Circle([+0.5, 0.0], 1.0)])
+    geo = dfmesh.Union([dfmesh.Circle([-0.5, 0.0], 1.0), dfmesh.Circle([+0.5, 0.0], 1.0)])
     np.random.seed(0)
     pts = np.random.uniform(-2.0, 2.0, (2, 100))
     pts = geo.boundary_step(pts)

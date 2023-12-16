@@ -1,12 +1,12 @@
 import numpy as np
 from helpers import assert_norm_equality
 
-import dmsh
+import dfmesh
 
 
 def test_difference(show=False):
-    geo = dmsh.Circle([-0.5, 0.0], 1.0) - dmsh.Circle([+0.5, 0.0], 1.0)
-    X, cells = dmsh.generate(geo, 0.1, show=show, max_steps=100)
+    geo = dfmesh.Circle([-0.5, 0.0], 1.0) - dfmesh.Circle([+0.5, 0.0], 1.0)
+    X, cells = dfmesh.generate(geo, 0.1, show=show, max_steps=100)
 
     geo.plot()
 
@@ -16,7 +16,7 @@ def test_difference(show=False):
 
 
 def test_boundary_step():
-    geo = dmsh.Difference(dmsh.Circle([-0.5, 0.0], 1.0), dmsh.Circle([+0.5, 0.0], 1.0))
+    geo = dfmesh.Difference(dfmesh.Circle([-0.5, 0.0], 1.0), dfmesh.Circle([+0.5, 0.0], 1.0))
     pts = np.array(
         [
             [-2.1, 0.0],
@@ -31,7 +31,7 @@ def test_boundary_step():
 
 
 def test_boundary_step2():
-    geo = dmsh.Difference(dmsh.Circle([-0.5, 0.0], 1.0), dmsh.Circle([+0.5, 0.0], 1.0))
+    geo = dfmesh.Difference(dfmesh.Circle([-0.5, 0.0], 1.0), dfmesh.Circle([+0.5, 0.0], 1.0))
     np.random.seed(0)
     pts = np.random.uniform(-2.0, 2.0, (2, 100))
     pts = geo.boundary_step(pts)
@@ -43,9 +43,9 @@ def test_boundary_step2():
 
 
 def test_boundary_step_pacman():
-    geo = dmsh.Difference(
-        dmsh.Circle([0.0, 0.0], 1.0),
-        dmsh.Polygon([[0.0, 0.0], [1.5, 0.4], [1.5, -0.4]]),
+    geo = dfmesh.Difference(
+        dfmesh.Circle([0.0, 0.0], 1.0),
+        dfmesh.Polygon([[0.0, 0.0], [1.5, 0.4], [1.5, -0.4]]),
     )
     # np.random.seed(0)
     # pts = np.random.uniform(-2.0, 2.0, (2, 100))
@@ -64,7 +64,7 @@ def test_boundary_step_pacman():
     import matplotlib.pyplot as plt
 
     plt.plot(pts[0], pts[1], "xk")
-    plt.show()
+    #plt.show()
     # assert np.all(np.abs(geo.dist(pts)) < 1.0e-12)
 
 

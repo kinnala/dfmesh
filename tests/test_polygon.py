@@ -1,11 +1,11 @@
 import numpy as np
 from helpers import assert_norm_equality
 
-import dmsh
+import dfmesh
 
 
 def test(show=False):
-    geo = dmsh.Polygon(
+    geo = dfmesh.Polygon(
         [
             [0.0, 0.0],
             [1.1, 0.0],
@@ -17,7 +17,7 @@ def test(show=False):
         ]
     )
     # geo.show()
-    X, cells = dmsh.generate(geo, 0.1, show=show, max_steps=100)
+    X, cells = dfmesh.generate(geo, 0.1, show=show, max_steps=100)
 
     ref_norms = [4.1426056822140765e02, 2.1830112296142847e01, 2.0000000000000000e00]
     assert_norm_equality(X.flatten(), ref_norms, 1.0e-5)
@@ -25,7 +25,7 @@ def test(show=False):
 
 
 def test_boundary_step2(plot=False):
-    geo = dmsh.Polygon(
+    geo = dfmesh.Polygon(
         [
             [0.0, 0.0],
             [1.1, 0.0],

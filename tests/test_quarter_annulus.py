@@ -1,19 +1,19 @@
 import numpy as np
 from helpers import assert_norm_equality
 
-import dmsh
+import dfmesh
 
 
 def test_quarter_annulus():
     h = 0.05
-    disk0 = dmsh.Circle([0.0, 0.0], 0.25)
-    disk1 = dmsh.Circle([0.0, 0.0], 1.0)
-    diff0 = dmsh.Difference(disk1, disk0)
+    disk0 = dfmesh.Circle([0.0, 0.0], 0.25)
+    disk1 = dfmesh.Circle([0.0, 0.0], 1.0)
+    diff0 = dfmesh.Difference(disk1, disk0)
 
-    rect = dmsh.Rectangle(0.0, 1.0, 0.0, 1.0)
-    quarter = dmsh.Intersection([diff0, rect])
+    rect = dfmesh.Rectangle(0.0, 1.0, 0.0, 1.0)
+    quarter = dfmesh.Intersection([diff0, rect])
 
-    points, cells = dmsh.generate(
+    points, cells = dfmesh.generate(
         quarter,
         lambda x: h + 0.1 * np.abs(disk0.dist(x)),
         tol=1.0e-10,

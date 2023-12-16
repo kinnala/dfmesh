@@ -1,11 +1,11 @@
 import numpy as np
 from helpers import assert_norm_equality, save
 
-import dmsh
+import dfmesh
 
 
 def test_boundary_step():
-    geo = dmsh.Rectangle(-2.0, +2.0, -1.0, +1.0)
+    geo = dfmesh.Rectangle(-2.0, +2.0, -1.0, +1.0)
 
     # Check boundary steps
     out = geo.boundary_step([0.1, 0.0])
@@ -37,8 +37,8 @@ def test_boundary_step():
 
 
 def test_rectangle(show=False):
-    geo = dmsh.Rectangle(-1.0, +2.0, -1.0, +1.0)
-    X, cells = dmsh.generate(geo, 0.1, show=show, max_steps=100)
+    geo = dfmesh.Rectangle(-1.0, +2.0, -1.0, +1.0)
+    X, cells = dfmesh.generate(geo, 0.1, show=show, max_steps=100)
 
     ref_norms = [9.7172325705673779e02, 3.1615286239175994e01, 2.0000000000000000e00]
     assert_norm_equality(X.flatten(), ref_norms, 1.0e-10)
@@ -46,17 +46,17 @@ def test_rectangle(show=False):
 
 
 def test_duplicate_points(show=False):
-    # https://github.com/nschloe/dmsh/issues/66
-    # geo = dmsh.Rectangle(0.0, 1.8, 0.0, 0.41)
+    # https://github.com/nschloe/dfmesh/issues/66
+    # geo = dfmesh.Rectangle(0.0, 1.8, 0.0, 0.41)
 
-    # points, cells = dmsh.generate(geo, 0.2, tol=2e-2, show=show)
+    # points, cells = dfmesh.generate(geo, 0.2, tol=2e-2, show=show)
 
     # is_part_of_cell = np.zeros(len(points), dtype=bool)
     # is_part_of_cell[cells.flat] = True
     # assert np.all(is_part_of_cell)
 
-    geo = dmsh.Rectangle(0.0, 1.4, 0.0, 0.41)
-    points, cells = dmsh.generate(geo, 0.025, tol=1e-5, show=show, max_steps=1)
+    geo = dfmesh.Rectangle(0.0, 1.4, 0.0, 0.41)
+    points, cells = dfmesh.generate(geo, 0.025, tol=1e-5, show=show, max_steps=1)
     is_part_of_cell = np.zeros(len(points), dtype=bool)
     is_part_of_cell[cells.flat] = True
     assert np.all(is_part_of_cell)

@@ -1,9 +1,8 @@
-import meshplex
 import numpy as np
 import pytest
 from helpers import assert_norm_equality
 
-import dmsh
+import dfmesh
 
 
 @pytest.mark.parametrize(
@@ -14,9 +13,8 @@ import dmsh
     ],
 )
 def test_circle(radius, ref_norms, show=False):
-    geo = dmsh.Circle([0.0, 0.0], 1.0)
-    X, cells = dmsh.generate(geo, radius, show=show, max_steps=100)
-    meshplex.MeshTri(X, cells).show()
+    geo = dfmesh.Circle([0.0, 0.0], 1.0)
+    X, cells = dfmesh.generate(geo, radius, show=show, max_steps=100)
 
     # make sure the origin is part of the mesh
     assert np.sum(np.einsum("ij,ij->i", X, X) < 1.0e-6) == 1
@@ -25,23 +23,23 @@ def test_circle(radius, ref_norms, show=False):
     return X, cells
 
 
-# with these target edge lengths, dmsh once produced weird results near the boundary
+# with these target edge lengths, dfmesh once produced weird results near the boundary
 @pytest.mark.parametrize(
     "target_edge_length", [0.07273, 0.07272, 0.07271, 0.0711, 0.03591]
 )
 def test_degenerate_circle(target_edge_length):
-    geo = dmsh.Circle([0.0, 0.0], 1.0)
-    X, cells = dmsh.generate(
-        geo, target_edge_length, show=False, max_steps=200, verbose=True
+    geo = dfmesh.Circle([0.0, 0.0], 1.0)
+    X, cells = dfmesh.generate(
+        geo, target_edge_length, show=False, verbose=True
     )
 
-    mesh = meshplex.MeshTri(X, cells)
+    mesh = dfmesh.MeshTri(X, cells)
     min_q = np.min(mesh.q_radius_ratio)
     assert min_q > 0.5, f"min cell quality: {min_q:.3f}"
 
 
 def test_boundary_step():
-    geo = dmsh.Circle([0.1, 0.2], 1.0)
+    geo = dfmesh.Circle([0.1, 0.2], 1.0)
     np.random.seed(0)
     pts = np.random.uniform(-1.0, 1.0, (2, 100))
     pts = geo.boundary_step(pts)

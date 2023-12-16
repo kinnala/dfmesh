@@ -1,11 +1,10 @@
 import time
 
 import matplotlib.pyplot as plt
-import meshplex
 import numpy as np
 import pygmsh
 
-import dmsh
+import dfmesh
 
 
 def _compute_num_boundary_points(total_num_points):
@@ -40,10 +39,10 @@ def _compute_num_boundary_points(total_num_points):
     return num_boundary_points
 
 
-def dmsh_circle(num_points):
+def dfmesh_circle(num_points):
     target_edge_length = 2 * np.pi / _compute_num_boundary_points(num_points)
-    geo = dmsh.Circle([0.0, 0.0], 1.0)
-    X, cells = dmsh.generate(geo, target_edge_length)
+    geo = dfmesh.Circle([0.0, 0.0], 1.0)
+    X, cells = dfmesh.generate(geo, target_edge_length)
     return X, cells
 
 
@@ -58,26 +57,26 @@ def gmsh_circle(num_points):
 
 
 data = {
-    "dmsh": {"n": [], "time": [], "q": [], "version": dmsh.__version__},
+    "dfmesh": {"n": [], "time": [], "q": [], "version": dfmesh.__version__},
     "gmsh": {"n": [], "time": [], "q": [], "version": pygmsh.get_gmsh_version()},
 }
 for num_points in range(1000, 10000, 1000):
     print(num_points)
-    # dmsh
+    # dfmesh
     t = time.time()
-    pts, cells = dmsh_circle(num_points)
+    pts, cells = dfmesh_circle(num_points)
     t = time.time() - t
-    mesh = meshplex.MeshTri(pts, cells)
+    mesh = dfmesh.MeshTri(pts, cells)
     avg_q = np.sum(mesh.cell_quality) / len(mesh.cell_quality)
-    data["dmsh"]["n"].append(len(pts))
-    data["dmsh"]["time"].append(t)
-    data["dmsh"]["q"].append(avg_q)
+    data["dfmesh"]["n"].append(len(pts))
+    data["dfmesh"]["time"].append(t)
+    data["dfmesh"]["q"].append(avg_q)
 
     # gmsh
     t = time.time()
     pts, cells = gmsh_circle(num_points)
     t = time.time() - t
-    mesh = meshplex.MeshTri(pts, cells)
+    mesh = dfmesh.MeshTri(pts, cells)
     avg_q = np.sum(mesh.cell_quality) / len(mesh.cell_quality)
     data["gmsh"]["n"].append(len(pts))
     data["gmsh"]["time"].append(t)

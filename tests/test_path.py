@@ -1,6 +1,6 @@
 import numpy as np
 
-from dmsh.geometry import pypathlib
+from dfmesh.geometry import pypathlib
 
 
 def test_squared_distance():
