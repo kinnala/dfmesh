@@ -16,6 +16,7 @@ from .geometry import (
     Union,
 )
 from .main import generate, triangulate
+from ._mesh_tri import MeshTri
 
 __all__ = [
     "__version__",
