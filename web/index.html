@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dfmesh in the browser</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>dfmesh <span>distance field meshing in the browser</span></h1>
+      <label class="example-picker">
+        Example
+        <select id="example"></select>
+      </label>
+      <div id="status" class="status loading" role="status">Starting…</div>
+    </header>
+
+    <main class="layout">
+      <section class="viewport" aria-label="Geometry and mesh">
+        <div class="toolbar" role="toolbar" aria-label="Drawing tools">
+          <div class="group" role="radiogroup" aria-label="Tool">
+            <button data-tool="pan" class="active" title="Pan and zoom (drag, scroll)">Pan</button>
+            <button data-tool="circle" title="Draw a circle: drag from the centre">Circle</button>
+            <button data-tool="rect" title="Draw a rectangle: drag between corners">Rectangle</button>
+            <button data-tool="polygon" title="Draw a polygon: click corners, double-click or click the first corner to finish">Polygon</button>
+          </div>
+          <div class="group" role="radiogroup" aria-label="Set operation for drawn shapes">
+            <button data-op="+" class="active" title="Union with the current geometry">Add</button>
+            <button data-op="-" title="Subtract from the current geometry">Subtract</button>
+            <button data-op="&amp;" title="Intersect with the current geometry">Intersect</button>
+          </div>
+          <div class="group" aria-label="Layers">
+            <label><input type="checkbox" id="show-field" checked /> Field</label>
+            <select id="field-kind" aria-label="Which field to plot">
+              <option value="dist">distance</option>
+              <option value="h">edge size h</option>
+            </select>
+            <label><input type="checkbox" id="show-contours" checked /> Contours</label>
+            <label><input type="checkbox" id="show-mesh" checked /> Mesh</label>
+          </div>
+          <div class="group">
+            <button id="fit" title="Fit the view to the geometry">Fit</button>
+          </div>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div id="hint" class="hint" hidden></div>
+        <div class="readout" id="readout"></div>
+        <div class="legend" id="legend" hidden>
+          <span id="legend-min"></span>
+          <div class="bar"></div>
+          <span id="legend-max"></span>
+          <small id="legend-label">signed distance (negative inside)</small>
+        </div>
+      </section>
+
+      <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" title="Drag to resize"></div>
+
+      <aside class="side" aria-label="Code">
+        <div class="side-head">
+          <h2>Geometry and mesh code</h2>
+          <button id="undo" title="Undo the last drawn shape or example change">Undo</button>
+          <button id="copy-script" title="Copy a standalone Python script">Copy script</button>
+        </div>
+        <p class="help">
+          Python, run with Pyodide. Define <code>geo</code>; optionally <code>h</code>
+          (edge size: number or function of <code>x</code> with shape (2, N)),
+          <code>options</code> (keyword arguments of <code>df.triangulate</code>) and
+          <code>view = [x0, x1, y0, y1]</code>. <code>df</code>, <code>np</code> and
+          <code>math</code> are imported.
+        </p>
+        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python code"></textarea>
+        <div class="actions">
+          <button id="mesh" class="primary" disabled title="Ctrl+Enter">Generate mesh</button>
+          <button id="stop" hidden title="Stop and restart Python">Stop</button>
+          <button id="download" disabled title="Download points and triangles as JSON">Download mesh</button>
+        </div>
+        <dl class="stats" id="stats"></dl>
+        <h3>Output</h3>
+        <pre id="log" class="log" aria-live="polite"></pre>
+      </aside>
+    </main>
+
+    <script src="examples.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

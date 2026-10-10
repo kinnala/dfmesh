@@ -61,6 +61,13 @@ path = df.Path([[.4, .6], [.6, .4]])
 p, t = df.triangulate(geo, lambda x: .03 + .1 * path.dist(x))
 ```
 
+## Browser app
+
+`web/` contains a prototype that runs dfmesh in the browser with Pyodide,
+with distance field plots, drawing tools and editable Python code. Serve the
+repository root (`python -m http.server`) and open `/web/`; see
+[web/README.md](web/README.md).
+
 ## License
 
 This is a fork of dmsh 0.2.19 and meshplex 0.17.1 (c) Nico Schlömer which
