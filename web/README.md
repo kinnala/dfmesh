@@ -33,14 +33,23 @@ cdn.jsdelivr.net; later loads come from the browser cache. Meshing runs in a
 Web Worker, so the page stays responsive; **Stop** restarts Python if a run
 takes too long.
 
-To host it, publish the repository root as a static site (e.g. GitHub Pages
-from the branch root) and open `<site>/web/`.
+## GitHub Pages
+
+`.github/workflows/pages.yml` publishes `web/` with a copy of `src/dfmesh/`
+next to it (the worker looks for the sources in `../src/dfmesh/` and then in
+`dfmesh/`). Set *Settings > Pages > Source* to *GitHub Actions*; the app is
+then at `https://<user>.github.io/dfmesh/`.
+
+If you instead publish a branch, publish the repository root and open
+`<site>/web/`. The `.nojekyll` file in the root is needed either way: without
+it Pages runs Jekyll, which drops every file starting with an underscore
+(`__init__.py`, `_mesh.py`, ...).
 
 URL parameters:
 
 - `?pyodide=<url>` loads Pyodide from another location (must contain the
   full distribution, including the numpy and scipy wheels).
-- `?src=<url>` loads the dfmesh sources from another location.
+- `?src=<url>` loads the dfmesh sources from another location (a URL ending in `/`).
 
 ## Files
 

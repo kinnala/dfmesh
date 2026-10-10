@@ -1,0 +1,41 @@
+name: pages
+
+# Publishes the browser app (web/) together with the dfmesh sources to GitHub
+# Pages. In the repository settings, set Pages > Source to "GitHub Actions".
+# The app is then served at https://<user>.github.io/dfmesh/.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp web/*.html web/*.css web/*.js web/*.py _site/
+          cp -r src/dfmesh _site/dfmesh
+          find _site -name __pycache__ -prune -exec rm -rf {} +
+          # Without this, Jekyll drops files starting with "_" (__init__.py, ...)
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -10,8 +10,12 @@
 const params = new URLSearchParams(self.location.search);
 const PYODIDE_URL =
   params.get("pyodide") || "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/";
-// Location of the dfmesh package, relative to this file.
-const DFMESH_SRC = params.get("src") || "../src/dfmesh/";
+// Location of the dfmesh package, relative to this file: ../src/dfmesh/ when
+// the repository root is served, dfmesh/ in the GitHub Pages build (see
+// .github/workflows/pages.yml). ?src=<url> overrides both.
+const DFMESH_SRC_CANDIDATES = params.get("src")
+  ? [params.get("src")]
+  : ["../src/dfmesh/", "dfmesh/"];
 
 // The files of src/dfmesh. Keep in sync with the package
 // (web/tests/test_bridge.py checks this).
@@ -53,6 +57,22 @@ async function fetchText(url) {
   return res.text();
 }
 
+async function findDfmeshSource() {
+  for (const src of DFMESH_SRC_CANDIDATES) {
+    try {
+      const res = await fetch(src + "__init__.py", { method: "HEAD" });
+      if (res.ok) return src;
+    } catch (e) {
+      // try the next location
+    }
+  }
+  throw new Error(
+    `Could not find the dfmesh sources (tried ${DFMESH_SRC_CANDIDATES.join(", ")}). ` +
+      "On GitHub Pages, make sure files starting with an underscore are published " +
+      "(add a .nojekyll file).",
+  );
+}
+
 async function start() {
   status("Loading Pyodide…");
   importScripts(PYODIDE_URL + "pyodide.js");
@@ -70,9 +90,8 @@ async function start() {
   }
 
   status("Loading dfmesh…");
-  const sources = await Promise.all(
-    DFMESH_FILES.map((f) => fetchText(DFMESH_SRC + f)),
-  );
+  const src = await findDfmeshSource();
+  const sources = await Promise.all(DFMESH_FILES.map((f) => fetchText(src + f)));
   DFMESH_FILES.forEach((f, i) => {
     const path = `${SITE}/dfmesh/${f}`;
     pyodide.FS.mkdirTree(path.slice(0, path.lastIndexOf("/")));
