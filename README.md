@@ -2,6 +2,8 @@
 
 A mesh generator inspired by [distmesh](http://persson.berkeley.edu/distmesh/).
 
+Try this online [via Pyodide!](https://kinnala.github.io/dfmesh/web/)
+
 ## Installation
 
 ```
