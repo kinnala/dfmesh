@@ -324,8 +324,8 @@ class Mesh:
             # choose.
             k0 = 0
             e0 = e0[k0]
-            orthogonal_basis = np.row_stack([orthogonal_basis[:, k0], [v[k0]]])
-            norms2 = np.row_stack([norms2[:, k0], [vv[k0]]])
+            orthogonal_basis = np.vstack([orthogonal_basis[:, k0], [v[k0]]])
+            norms2 = np.vstack([norms2[:, k0], [vv[k0]]])
 
             # The squared volume is the squared volume of the face times the squared
             # height divided by (n+1) ** 2.

@@ -42,7 +42,8 @@ class Ellipse(Geometry):
             ]
         )
 
-        p = -np.linalg.solve(np.moveaxis(hess, -1, 0), jac.T)
+        # solve one 2x2 system per point (explicit trailing axis for NumPy >= 2)
+        p = -np.linalg.solve(np.moveaxis(hess, -1, 0), jac.T[..., None])[..., 0]
         return x + p.T
 
     def boundary_step(self, x):
